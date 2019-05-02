@@ -1,4 +1,4 @@
- #include <Arduboy2.h>
+#include <Arduboy2.h>
 #include "World.h"
 
 Arduboy2 arduboy;
@@ -15,6 +15,43 @@ constexpr int gravity = 1;
 constexpr int gravityFrameRate = 15;
 
 bool onGround = false;
+
+bool isVacantSpace(int tile) {
+  if (tile == 0) {
+    return true;
+  }
+  return false;
+}
+
+bool canMoveLeft() {
+  if(playerX == 0) {
+    return false;
+  } else{
+    int absolutePosition = playerX + worldX;
+    if (absolutePosition % 8 == 0) {
+      uint8_t tile = getMapTile((absolutePosition - 1) / 8, playerY / 8);
+      return isVacantSpace(tile);
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool canMoveRight() {
+  if(playerX == 128 - playerWidth) {
+    return false;
+  } else {
+    int absolutePosition = playerX + worldX + playerWidth;
+    if (absolutePosition % 8 == 7) {
+      uint8_t tile = getMapTile((absolutePosition + 1) / 8, playerY / 8);
+      return isVacantSpace(tile);
+    } else {
+    return true;
+  }
+}
+return false;
+}
 
 void setup() 
 {
@@ -33,38 +70,48 @@ void loop() {
   arduboy.pollButtons();
 
   if(arduboy.pressed(LEFT_BUTTON)) {
-    if (worldX == 0) { 
-      if (playerX > 0) playerX -= 1;  
+
+    if (canMoveLeft()) {
+      if (worldX == 0) { 
+        if (playerX > 0) playerX -= 1;  
       }
-    else if (worldX == (mapWidth - 16) * 8) { 
-      if (playerX > 64 - (playerWidth /2)) { 
-        playerX -= 1;
-      }
+      else if (worldX == (mapWidth - 16) * 8) { 
+        if (playerX > 64 - (playerWidth /2)) { 
+          playerX -= 1;
+        }
+        else {
+          worldX -= 1;  
+        }
+       }
       else {
-        worldX -= 1; 
+          worldX -= 1;  
+      }
+
+    }
+
+  }
+
+  if(arduboy.pressed(RIGHT_BUTTON)) {
+
+    if (canMoveRight()) {
+
+      if (worldX == 0) { 
+
+        if (playerX < 64 - (playerWidth  / 2)) {  
+          playerX += 1;
+        } else { 
+          worldX += 1; 
+        }
+      } else if (worldX == (mapWidth - 16) * 8) { 
+        if (playerX < 128 - playerWidth) {  
+          playerX += 1;
+        }
+      } else {
+        worldX += 1;
       }
     }
-    else {
-        worldX -= 1;  
-    }
-
   }
-
-if(arduboy.pressed(RIGHT_BUTTON)) {
-  if (worldX == 0) {
-    if (playerX < 64 - (playerWidth /2)) {
-      playerX += 1;
-    } else {
-      worldX += 1;
-    }
-  } else if (worldX == (mapWidth - 16) * 8) {
-    if (playerX < 128 - playerWidth) {
-      playerX += 1;
-    }
-  } else {
-    worldX += 1;
-  }
-}
+  
 if(arduboy.justPressed(A_BUTTON))
 {//if player is not jumping
   if(onGround)
