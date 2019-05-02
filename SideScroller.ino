@@ -1,18 +1,19 @@
 #include <Arduboy2.h>
 #include "World.h"
+#include <FixedPointsCommon.h>
 
 Arduboy2 arduboy;
 
-int playerX = 62;
-int playerY = 58;
-int playerVelocityY = 0;
+SQ15x16 playerX = 62;
+SQ15x16 playerY = 58;
+SQ15x16 playerVelocityY = 0;
 int worldX = 0;
 
 constexpr int playerWidth = 4;
 constexpr int playerHeight = 4;
 constexpr int groundLevel = (HEIGHT - 9);
-constexpr int gravity = 1;
-constexpr int gravityFrameRate = 15;
+constexpr SQ15x16 gravity = 0.5;
+
 
 bool onGround = false;
 
@@ -27,9 +28,9 @@ bool canMoveLeft() {
   if(playerX == 0) {
     return false;
   } else{
-    int absolutePosition = playerX + worldX;
+    int absolutePosition = playerX.getInteger() + worldX;
     if (absolutePosition % 8 == 0) {
-      uint8_t tile = getMapTile((absolutePosition - 1) / 8, playerY / 8);
+      uint8_t tile = getMapTile((absolutePosition - 1) / 8, playerY.getInteger() / 8);
       return isVacantSpace(tile);
     } else {
       return true;
@@ -42,9 +43,9 @@ bool canMoveRight() {
   if(playerX == 128 - playerWidth) {
     return false;
   } else {
-    int absolutePosition = playerX + worldX + playerWidth;
+    int absolutePosition = playerX.getInteger() + worldX + playerWidth;
     if (absolutePosition % 8 == 7) {
-      uint8_t tile = getMapTile((absolutePosition + 1) / 8, playerY / 8);
+      uint8_t tile = getMapTile((absolutePosition + 1) / 8, playerY.getInteger() / 8);
       return isVacantSpace(tile);
     } else {
     return true;
@@ -124,19 +125,17 @@ if(arduboy.justPressed(A_BUTTON))
 }
 //if player is jumping
 if(playerVelocityY < 0)
-{//start gravity
- if(arduboy.everyXFrames(gravityFrameRate))
- {
+{
   playerVelocityY += gravity;
  }
-}
+
 
 if(playerVelocityY >= 0)
 {
   playerVelocityY = gravity;
 }
-int nextPlayerY = (playerY + playerVelocityY);
-int nextPlayerYBottom = (nextPlayerY + playerHeight);
+SQ15x16 nextPlayerY = (playerY + playerVelocityY);
+SQ15x16 nextPlayerYBottom = (nextPlayerY + playerHeight);
 
 if(nextPlayerYBottom >= groundLevel) {
 
@@ -161,7 +160,7 @@ for(uint8_t y = 0; y < mapHeight; ++y) {
   }
   
   //draw player
-  arduboy.fillRect(playerX, playerY, playerWidth, playerHeight, WHITE);
+  arduboy.fillRect(playerX.getInteger(), playerY.getInteger(), playerWidth, playerHeight, WHITE);
 
   
   }
