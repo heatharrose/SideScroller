@@ -3,9 +3,12 @@
 
 Arduboy2 arduboy;
 
+#define playerJump (-100)
+byte playerFrame = 0;
 int playerX = 62;
 int playerY = 58;
 int playerVelocityY = 0;
+
 
 constexpr int playerWidth = 4;
 constexpr int playerHeight = 4;
@@ -40,40 +43,21 @@ if(arduboy.pressed(RIGHT_BUTTON))
   playerX += 1;
 }
 
-if(arduboy.justPressed(A_BUTTON))
-{//if player is not jumping
-  if(onGround)
-  {//make player jump
-    playerVelocityY = -2;
-    
-    onGround = false;
-
-  }
-}
-//if player is jumping
-if(playerVelocityY < 0)
-{//start gravity
- if(arduboy.everyXFrames(gravityFrameRate))
- {
-  playerVelocityY += gravity;
- }
+bool jumpPressed() {
+return (arduboy.buttonsState() & (A_BUTTON)) != 0;
 }
 
-if(playerVelocityY >= 0)
+if(jumpPressed())
 {
-  playerVelocityY = gravity;
+  startJump();
 }
-int nextPlayerY = (playerY + playerVelocityY);
-int nextPlayerYBottom = (nextPlayerY + playerHeight);
 
-if(nextPlayerYBottom >= groundLevel)
-{
-  nextPlayerY = (groundLevel - playerHeight);
-
-  onGround = true;
+if ((onGround == true) and jumpPressed()) {
+  startJump();
 }
-playerY = nextPlayerY;
 
+
+  
 arduboy.clear();
 
 for(uint8_t y = 0; y < mapHeight; ++y) {
@@ -86,6 +70,15 @@ for(uint8_t y = 0; y < mapHeight; ++y) {
 arduboy.fillRect(playerX, playerY, playerWidth, playerHeight, WHITE);
 
 
+}
+void startJump() {
+  playerVelocityY = playerJump;
+  playerYi = playerY;
+}
+
+void start_Gravity() {
+  playerYi = playerY;
+  ballV = 0;
 }
 arduboy.display();
 }
